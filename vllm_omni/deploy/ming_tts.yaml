@@ -1,6 +1,14 @@
 # Ming-omni-tts deploy: stage-0 LLM+flow -> stage-1 audio VAE.
 # Verified legacy settings migrated from ming_tts.yaml and ming_tts_async_chunk.yaml.
 # Default mode is async-chunk streaming on a single GPU.
+#
+# Both stages keep enforce_eager: true because their graphs do not work yet.
+# Measured on 1x RTX 4080 SUPER (vLLM 0.32.0, main @ 73505b0), request -> audio:
+#   * stage 0 (AR + flow) on graphs: 0.32 s of audio instead of ~9 s (~3%),
+#   * both stages on graphs: 0.00 s of audio,
+#   * both stages eager: ~9.3 s, unchanged.
+# The LLM+flow hybrid is the blocker; enabling graphs needs work inside that
+# stage, not a config flip.
 # pipeline: required — HF config reports model_type="dense" with no architectures,
 # so auto-detection falls through. This key routes the deploy-config probe in
 # StageConfigFactory.create_from_model to the correct registry entry.

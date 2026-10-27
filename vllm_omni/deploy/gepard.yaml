@@ -1,5 +1,11 @@
 # Gepard-1.0: single-stage native-AR FSQ/NanoCodec TTS (~0.5B).
-# Target 1x L4 24GB. Zero-shot only; enforce_eager until the perf PR.
+# Target 1x L4 24GB. Zero-shot only.
+#
+# enforce_eager is load-bearing, not a placeholder: with enforce_eager: false the
+# AR talker runs but no frames reach the audio path and every request fails with
+# "TTS model did not produce audio output" (measured on 1x RTX 4080 SUPER, vLLM
+# 0.32.0, main @ 73505b0). The perf work for this model has to start from the
+# in-model 32-head sampling path, not from the vLLM graph switch.
 #
 # The pipeline pin is required, not cosmetic: the checkpoint's config.json
 # self-identifies as qwen3_5_text, so model_type inference cannot reach the
