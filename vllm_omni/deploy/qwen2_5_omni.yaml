@@ -11,12 +11,15 @@
 # enforce_eager policy across the three deploy YAMLs:
 #   * code2wav / generation stages:  always true (cudagraph incompatible with
 #     the custom generation loop — set explicitly everywhere).
-#   * AR stages (thinker, talker):   model-dependent. Qwen2.5-Omni AR stages
-#     use the default (false = cudagraph on) like Qwen3-Omni / Qwen3-TTS;
-#     both thinker and talker decode steps capture and replay cleanly on CUDA
-#     (see issue #7960). ROCm keeps both eager because capturing there is not
-#     validated yet; NPU keeps the talker eager for the same reason. XPU
-#     overrides are documented below.
+#   * AR stages (thinker, talker):   model-dependent. Qwen2.5-Omni runs the
+#     talker with CUDA graphs (false) because it emits 1.5-2k codec tokens per
+#     request and its decode loop is launch-bound. The thinker stays eager:
+#     compiling its decode changes image-conditioned greedy text (the compiled
+#     kernels pick a different argmax mid-answer) and is slower for that
+#     prefill shape, while it only saves ~8% end-to-end on text/audio.
+#     ROCm keeps both eager because capturing there is not validated yet; NPU
+#     keeps the talker eager for the same reason. XPU overrides are documented
+#     below.
 async_chunk: false
 
 stages:
@@ -24,7 +27,7 @@ stages:
     max_num_batched_tokens: 32768
     max_num_seqs: 1
     gpu_memory_utilization: 0.8
-    enforce_eager: false
+    enforce_eager: true
     trust_remote_code: true
     enable_prefix_caching: false
     mm_processor_cache_gb: 0

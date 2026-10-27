@@ -23,9 +23,9 @@ models = ["Qwen/Qwen2.5-Omni-7B"]
 _CI_DEPLOY = get_deploy_config_path("ci/qwen2_5_omni.yaml")
 
 
-# The bundled deploy YAML runs both AR stages with CUDA graphs on CUDA and
-# keeps eager on ROCm / NPU (talker) / XPU through its ``platforms:`` section,
-# so every platform runs this test on the same resolved config.
+# The bundled deploy YAML runs the talker with CUDA graphs on CUDA and keeps
+# eager on ROCm, on the NPU talker and on XPU through its ``platforms:``
+# section, so every platform runs this test on the same resolved config.
 stage_config = _CI_DEPLOY
 
 # Create parameter combinations for model and stage config
